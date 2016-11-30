@@ -19,6 +19,11 @@ int main()
 
 	for (;;) {
 		cv::Mat frame = camera.QueryFrame();
+		if (frame.empty()) {
+			printf("Some filters have not completed ");
+			printf("the transition to a running state.\n");
+			break;
+		}
 		cv::resize(frame, frame, cv::Size(1280, 800), 0, 0, cv::INTER_CUBIC);		
 		cv::imshow("input", frame);
 		if (cv::waitKey(33) == 27)

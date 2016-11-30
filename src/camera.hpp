@@ -25,19 +25,14 @@ class Camera
 private:
 
 	bool m_bConnected, m_bLock, m_bChanged;
-
 	int m_nWidth, m_nHeight;
-
 	long m_nBufferSize;
 
 	cv::Mat m_frame;
 
 	CComPtr<IGraphBuilder> m_pGraph;
-
 	CComPtr<ISampleGrabber> m_pSampleGrabber;
-
 	CComPtr<IMediaControl> m_pMediaControl;
-
 	CComPtr<IMediaEvent> m_pMediaEvent;
 
 	CComPtr<IBaseFilter> m_pSampleGrabberFilter;
@@ -454,9 +449,10 @@ public:
 
 	cv::Mat QueryFrame()
 	{
-		long evCode, size = 0;
+		if (m_pMediaControl->Run() == S_FALSE)
+			return cv::Mat();
 
-		m_pMediaControl->Run();
+		long evCode, size = 0;
 		m_pMediaEvent->WaitForCompletion(INFINITE, &evCode);
 		m_pSampleGrabber->GetCurrentBuffer(&size, NULL);
 
