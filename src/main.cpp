@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <opencv2/opencv.hpp>
-#include "CameraDS.h"
+#include "camera.hpp"
 
 int main()
 {
-	int camCount = CCameraDS::CameraCount();
-	CCameraDS camDS;
+	int camCount = Camera::CameraCount();
+	Camera camDS;
 	for (int i = 0; i < camCount; i++) {
 		char szCamName[1024];
 		int retval = camDS.CameraName(i, szCamName, sizeof(szCamName));
@@ -26,7 +26,7 @@ int main()
 			break;
 		}
 		cv::Mat frame = cv::cvarrToMat(pFrame);
-		cv::resize(frame, frame, cv::Size(1280, 800), 0, 0, cv::INTER_CUBIC);
+		cv::resize(frame, frame, cv::Size(1280, 800), 0, 0, cv::INTER_CUBIC);		
 		cv::imshow("input", frame);
 		if (cv::waitKey(33) == 27)
 			break;
