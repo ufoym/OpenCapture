@@ -6,7 +6,7 @@
 #include "dshow.h"
 #include <atlbase.h>
 #include <windows.h>
-#include <opencv/cxcore.h>
+#include <opencv2/opencv.hpp>
 #pragma comment(lib,"strmiids.lib") 
 
 #define MYFREEMEDIATYPE(mt)	{if ((mt).cbFormat != 0)		\
@@ -30,7 +30,7 @@ private:
 
 	long m_nBufferSize;
 
-	IplImage *m_pFrame;
+	cv::Mat m_frame;
 
 	CComPtr<IGraphBuilder> m_pGraph;
 
@@ -167,7 +167,7 @@ public:
 		m_nWidth = m_nHeight = 0;
 		m_nBufferSize = 0;
 
-		m_pFrame = NULL;
+		m_frame = NULL;
 
 		m_pNullFilter = NULL;
 		m_pMediaEvent = NULL;
@@ -358,12 +358,6 @@ public:
 		m_pMediaEvent = NULL;
 		m_pNullFilter = NULL;
 		m_pNullInputPin = NULL;
-
-		if (m_pFrame)
-		{
-			cvReleaseImage(&m_pFrame);
-		}
-
 		m_bConnected = m_bLock = m_bChanged = false;
 		m_nWidth = m_nHeight = 0;
 		m_nBufferSize = 0;
@@ -457,34 +451,23 @@ public:
 	}
 
 	// -----------------------------------------------------------------------
-	// 抓取一帧，返回的IplImage不可手动释放！
-	// 返回图像数据的为RGB模式的Top-down (第一个字节为左上角像素)，
-	// 即IplImage::origin=0(IPL_ORIGIN_TL)
 
-	IplImage * QueryFrame()
+	cv::Mat QueryFrame()
 	{
 		long evCode, size = 0;
 
 		m_pMediaControl->Run();
 		m_pMediaEvent->WaitForCompletion(INFINITE, &evCode);
-
 		m_pSampleGrabber->GetCurrentBuffer(&size, NULL);
 
 		//if the buffer size changed
 		if (size != m_nBufferSize)
 		{
-			if (m_pFrame)
-			{
-				cvReleaseImage(&m_pFrame);
-			}
-
 			m_nBufferSize = size;
-			m_pFrame = cvCreateImage(cvSize(m_nWidth, m_nHeight), IPL_DEPTH_8U, 3);
+			m_frame = cv::Mat(m_nHeight, m_nWidth, CV_8UC3);
 		}
 
-		m_pSampleGrabber->GetCurrentBuffer(&m_nBufferSize, (long*)m_pFrame->imageData);
-		cvFlip(m_pFrame);
-
-		return m_pFrame;
+		m_pSampleGrabber->GetCurrentBuffer(&m_nBufferSize, (long*)m_frame.data);
+		return m_frame;
 	}
 };
